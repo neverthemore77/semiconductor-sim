@@ -1,210 +1,381 @@
 "use client";
 
-const materials = [
-  {
-    name: "Silicon",
-    symbol: "Si",
-    description: "대표적인 원소 반도체 소재",
-    bandGap: 1.12,
-    mobility: 1350,
-    structure: "Diamond Cubic",
-    type: "Elemental Semiconductor",
-    applications: "CMOS, Logic, Memory, Power",
-  },
-  {
-    name: "Germanium",
-    symbol: "Ge",
-    description: "높은 캐리어 이동도를 가진 원소 반도체",
-    bandGap: 0.66,
-    mobility: 3900,
-    structure: "Diamond Cubic",
-    type: "Elemental Semiconductor",
-    applications: "High-speed devices, Sensors",
-  },
-  {
-    name: "Gallium Nitride",
-    symbol: "GaN",
-    description: "넓은 밴드갭을 가진 화합물 반도체",
-    bandGap: 3.4,
-    mobility: 1000,
-    structure: "Wurtzite",
-    type: "Compound Semiconductor",
-    applications: "Power, RF, LED",
-  },
-  {
-    name: "Silicon Carbide",
-    symbol: "SiC",
-    description: "고온·고전압 환경에 적합한 화합물 반도체",
-    bandGap: 3.26,
-    mobility: 800,
-    structure: "Hexagonal",
-    type: "Compound Semiconductor",
-    applications: "EV, Power Electronics",
-  },
-];
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import { materials } from "@/data/materials";
+
+type FilterType = "All" | "Elemental Semiconductor" | "Compound Semiconductor";
 
 export default function MaterialsPage() {
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<FilterType>("All");
+
+  const filteredMaterials = useMemo(() => {
+    const keyword = search.trim().toLowerCase();
+
+    return materials.filter((material) => {
+      const matchesType =
+        filter === "All" || material.type === filter;
+
+      const searchableText = [
+        material.name,
+        material.symbol,
+        material.description,
+        material.structure,
+        material.crystalSystem,
+        material.type,
+        material.bandGapType,
+        material.highlight,
+        ...material.applications,
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      const matchesSearch =
+        keyword.length === 0 ||
+        searchableText.includes(keyword);
+
+      return matchesType && matchesSearch;
+    });
+  }, [search, filter]);
+
   return (
     <main className="min-h-screen bg-slate-950 text-white">
-
-      {/* Header */}
-
-      <header className="border-b border-slate-800">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-8 py-5">
-
-          <h1 className="text-xl font-bold">
-            ⚛ Semiconductor Simulator
-          </h1>
-
-          <a
+      {/* Navigation */}
+      <header className="border-b border-slate-800 bg-slate-950/90">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
+          <Link
             href="/"
-            className="text-sm text-slate-400 transition hover:text-white"
+            className="text-xl font-bold tracking-tight"
           >
-            ← Home
-          </a>
+            Semiconductor Sim
+          </Link>
 
+          <nav className="flex items-center gap-6 text-sm text-slate-400">
+            <Link
+              href="/"
+              className="transition hover:text-white"
+            >
+              Home
+            </Link>
+
+            <Link
+              href="/simulator"
+              className="transition hover:text-white"
+            >
+              Simulator
+            </Link>
+
+            <Link
+              href="/compare"
+              className="transition hover:text-white"
+            >
+              Compare
+            </Link>
+
+            <Link
+              href="/materials"
+              className="text-cyan-400"
+            >
+              Materials
+            </Link>
+
+            <Link
+              href="/learn"
+              className="transition hover:text-white"
+            >
+              Learn
+            </Link>
+          </nav>
         </div>
       </header>
 
-      {/* Main */}
+      {/* Hero */}
+      <section className="mx-auto max-w-7xl px-6 pb-10 pt-14">
+        <div className="max-w-3xl">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-400">
+            Material Database
+          </p>
 
-      <div className="mx-auto max-w-7xl px-8 py-10">
+          <h1 className="mt-3 text-4xl font-bold tracking-tight md:text-5xl">
+            Semiconductor Materials
+          </h1>
 
-        <p className="text-sm font-semibold uppercase tracking-widest text-cyan-400">
-          Materials
-        </p>
+          <p className="mt-5 text-base leading-7 text-slate-400 md:text-lg">
+            주요 반도체 재료의 밴드갭, 이동도, 결정 구조,
+            적용 분야를 비교하고 시뮬레이션으로 바로 연결할 수
+            있습니다.
+          </p>
+        </div>
+      </section>
 
-        <h2 className="mt-2 text-3xl font-bold">
-          Semiconductor Materials
-        </h2>
+      {/* Search / Filter */}
+      <section className="mx-auto max-w-7xl px-6">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="w-full lg:max-w-xl">
+              <label
+                htmlFor="material-search"
+                className="mb-2 block text-sm font-medium text-slate-300"
+              >
+                Search materials
+              </label>
 
-        <p className="mt-3 text-slate-400">
-          주요 반도체 소재의 결정 구조와 대표적인 물성을 확인해보세요.
-        </p>
+              <input
+                id="material-search"
+                type="text"
+                value={search}
+                onChange={(event) =>
+                  setSearch(event.target.value)
+                }
+                placeholder="예: Si, GaN, Wurtzite, Power..."
+                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-cyan-400"
+              />
+            </div>
 
-        {/* Material Cards */}
+            <div>
+              <p className="mb-2 text-sm font-medium text-slate-300">
+                Material type
+              </p>
 
-        <div className="mt-8 grid gap-6 md:grid-cols-2">
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setFilter("All")}
+                  className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
+                    filter === "All"
+                      ? "bg-cyan-500 text-slate-950"
+                      : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                  }`}
+                >
+                  All
+                </button>
 
-          {materials.map((material) => (
+                <button
+                  onClick={() =>
+                    setFilter("Elemental Semiconductor")
+                  }
+                  className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
+                    filter === "Elemental Semiconductor"
+                      ? "bg-cyan-500 text-slate-950"
+                      : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                  }`}
+                >
+                  Elemental
+                </button>
 
-            <div
-              key={material.symbol}
-              className="rounded-2xl border border-slate-800 bg-slate-900 p-6 transition hover:border-cyan-400/50"
-            >
-
-              {/* Top */}
-
-              <div className="flex items-start justify-between">
-
-                <div>
-
-                  <p className="text-5xl font-bold text-cyan-400">
-                    {material.symbol}
-                  </p>
-
-                  <h3 className="mt-3 text-xl font-semibold">
-                    {material.name}
-                  </h3>
-
-                  <p className="mt-2 text-sm text-slate-400">
-                    {material.description}
-                  </p>
-
-                </div>
-
-                <span className="rounded-full bg-cyan-400/10 px-3 py-1 text-xs text-cyan-400">
-                  {material.type}
-                </span>
-
+                <button
+                  onClick={() =>
+                    setFilter("Compound Semiconductor")
+                  }
+                  className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
+                    filter === "Compound Semiconductor"
+                      ? "bg-cyan-500 text-slate-950"
+                      : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                  }`}
+                >
+                  Compound
+                </button>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-              {/* Properties */}
+      {/* Count */}
+      <section className="mx-auto max-w-7xl px-6 pt-8">
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-slate-500">
+            Showing{" "}
+            <span className="font-semibold text-slate-300">
+              {filteredMaterials.length}
+            </span>{" "}
+            materials
+          </p>
+        </div>
+      </section>
 
-              <div className="mt-6 grid grid-cols-2 gap-3">
+      {/* Material Cards */}
+      <section className="mx-auto max-w-7xl px-6 pb-16 pt-5">
+        {filteredMaterials.length === 0 ? (
+          <div className="rounded-2xl border border-slate-800 bg-slate-900 p-10 text-center">
+            <div className="text-3xl">🔎</div>
 
-                <div className="rounded-xl bg-slate-950 p-4">
+            <h2 className="mt-4 text-lg font-semibold">
+              No materials found
+            </h2>
 
-                  <p className="text-xs text-slate-500">
-                    Band Gap
-                  </p>
+            <p className="mt-2 text-sm text-slate-500">
+              다른 재료명이나 키워드로 검색해보세요.
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2">
+            {filteredMaterials.map((material) => (
+              <article
+                key={material.symbol}
+                className="group rounded-2xl border border-slate-800 bg-slate-900 p-6 transition hover:-translate-y-1 hover:border-cyan-400/30 hover:shadow-2xl hover:shadow-cyan-950/20"
+              >
+                {/* Card header */}
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-cyan-400/10 text-xl font-bold text-cyan-300">
+                        {material.symbol}
+                      </div>
 
-                  <p className="mt-1 text-lg font-semibold">
-                    {material.bandGap} eV
-                  </p>
+                      <div>
+                        <h2 className="text-2xl font-bold">
+                          {material.name}
+                        </h2>
 
+                        <p className="mt-1 text-sm text-slate-500">
+                          {material.type}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                      material.bandGapType === "Direct"
+                        ? "bg-emerald-400/10 text-emerald-300"
+                        : "bg-violet-400/10 text-violet-300"
+                    }`}
+                  >
+                    {material.bandGapType} Band Gap
+                  </span>
                 </div>
 
-                <div className="rounded-xl bg-slate-950 p-4">
+                {/* Description */}
+                <p className="mt-6 text-sm leading-6 text-slate-400">
+                  {material.description}
+                </p>
 
-                  <p className="text-xs text-slate-500">
-                    Mobility
-                  </p>
+                {/* Main values */}
+                <div className="mt-6 grid grid-cols-2 gap-3">
+                  <div className="rounded-xl bg-slate-950 p-4">
+                    <p className="text-xs text-slate-500">
+                      Band Gap
+                    </p>
 
-                  <p className="mt-1 text-lg font-semibold">
-                    {material.mobility}
-                  </p>
+                    <p className="mt-2 text-xl font-semibold text-cyan-300">
+                      {material.bandGap} eV
+                    </p>
+                  </div>
 
-                  <p className="text-xs text-slate-600">
-                    cm²/V·s
-                  </p>
+                  <div className="rounded-xl bg-slate-950 p-4">
+                    <p className="text-xs text-slate-500">
+                      Electron Mobility
+                    </p>
 
+                    <p className="mt-2 text-xl font-semibold text-cyan-300">
+                      {material.electronMobility.toLocaleString()}
+                    </p>
+
+                    <p className="mt-1 text-xs text-slate-600">
+                      cm²/V·s
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl bg-slate-950 p-4">
+                    <p className="text-xs text-slate-500">
+                      Crystal Structure
+                    </p>
+
+                    <p className="mt-2 text-sm font-semibold text-white">
+                      {material.structure}
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl bg-slate-950 p-4">
+                    <p className="text-xs text-slate-500">
+                      Dielectric Constant
+                    </p>
+
+                    <p className="mt-2 text-xl font-semibold text-cyan-300">
+                      εᵣ {material.dielectricConstant}
+                    </p>
+                  </div>
                 </div>
 
-                <div className="rounded-xl bg-slate-950 p-4">
-
-                  <p className="text-xs text-slate-500">
-                    Crystal Structure
+                {/* Highlight */}
+                <div className="mt-5 rounded-xl border border-cyan-400/10 bg-cyan-400/5 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-cyan-400">
+                    Key characteristic
                   </p>
 
-                  <p className="mt-1 font-semibold">
-                    {material.structure}
+                  <p className="mt-2 text-sm leading-6 text-slate-300">
+                    {material.highlight}
                   </p>
-
                 </div>
 
-                <div className="rounded-xl bg-slate-950 p-4">
-
-                  <p className="text-xs text-slate-500">
+                {/* Applications */}
+                <div className="mt-5">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                     Applications
                   </p>
 
-                  <p className="mt-1 text-sm font-semibold">
-                    {material.applications}
-                  </p>
-
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {material.applications.map(
+                      (application) => (
+                        <span
+                          key={application}
+                          className="rounded-full bg-slate-800 px-3 py-1.5 text-xs text-slate-300"
+                        >
+                          {application}
+                        </span>
+                      )
+                    )}
+                  </div>
                 </div>
 
-              </div>
+                {/* Footer */}
+                <div className="mt-6 border-t border-slate-800 pt-5">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <a
+                      href={material.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-slate-500 transition hover:text-cyan-400"
+                    >
+                      Source: {material.sourceName} ↗
+                    </a>
 
-              {/* Button */}
+                    <Link
+                      href={`/simulator?material=${material.symbol}`}
+                      className="rounded-xl bg-cyan-500 px-4 py-2.5 text-center text-sm font-semibold text-slate-950 transition hover:bg-cyan-400"
+                    >
+                      Simulate {material.symbol}
+                    </Link>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
 
-              <div className="mt-6 flex gap-3">
+      {/* Scientific note */}
+      <section className="mx-auto max-w-7xl px-6 pb-16">
+        <div className="rounded-2xl border border-amber-400/10 bg-amber-400/5 p-6">
+          <div className="flex gap-4">
+            <div className="text-xl">⚠️</div>
 
-                <a
-                  href={`/simulator?material=${material.symbol}`}
-                  className="flex-1 rounded-xl bg-cyan-500 px-4 py-3 text-center text-sm font-semibold text-slate-950 transition hover:bg-cyan-400"
-                >
-                  Simulator에서 분석
-                </a>
+            <div>
+              <h3 className="font-semibold text-amber-200">
+                Scientific note
+              </h3>
 
-                <a
-                  href="/compare"
-                  className="rounded-xl border border-slate-700 px-4 py-3 text-sm font-semibold text-slate-300 transition hover:bg-slate-800"
-                >
-                  비교
-                </a>
-
-              </div>
-
+              <p className="mt-2 text-sm leading-6 text-slate-400">
+                표시된 물성값은 대표적인 문헌값을 기반으로 한
+                교육용 데이터입니다. 실제 밴드갭과 이동도는
+                온도, 결정 구조, 도핑 농도, 결정 결함 및 측정
+                조건 등에 따라 달라질 수 있습니다.
+              </p>
             </div>
-
-          ))}
-
+          </div>
         </div>
-
-      </div>
-
+      </section>
     </main>
   );
 }
